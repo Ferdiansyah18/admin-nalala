@@ -1,7 +1,7 @@
 // Comprehensive Test Suite for Nalala Admin Dashboard APIs and Frontend
 import { io } from "socket.io-client";
 
-const BASE_URL = "http://localhost:5000/api/v1";
+const BASE_URL = process.env.BASE_URL || "https://nalala-be.belanjamu.company/api/v1";
 const DASHBOARD_URL = "http://localhost:3001";
 
 let adminToken = "";

@@ -1,7 +1,18 @@
 import { ApiResponse } from '@/types/admin';
 
-const RAW_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
-const BASE_URL = RAW_BASE_URL.replace(/\/+$/, '');
+const DEFAULT_API_URL = 'https://nalala-be.belanjamu.company/api/v1';
+
+function getBaseUrl(): string {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL;
+  // Di client browser, gunakan relative path /api/v1 jika URL menuju nalala-be
+  // agar diproxy oleh Next.js rewrites sehingga bebas dari batasan CORS browser
+  if (typeof window !== 'undefined') {
+    if (envUrl.includes('nalala-be.belanjamu.company')) {
+      return '/api/v1';
+    }
+  }
+  return envUrl.replace(/\/+$/, '');
+}
 
 export class ApiError extends Error {
   constructor(public message: string, public status?: number) {
@@ -17,7 +28,9 @@ function getAuthHeader(): Record<string, string> {
 }
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
-  const url = `${BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+  const baseUrl = getBaseUrl();
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const url = `${baseUrl}${cleanEndpoint}`;
   const headers = {
     'Content-Type': 'application/json',
     ...getAuthHeader(),
